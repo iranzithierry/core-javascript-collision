@@ -1,24 +1,21 @@
-// Get the canvas element and its 2d context
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
-
-// Ball properties
 const ballRadius = 10;
-let ballX = canvas.width / 2; // Starting x-coordinate = 240
-let ballY = canvas.height - 30; // Starting y-coordinate = 290
-let ballXV = 2; // Ball's horizontal velocity
-let ballYV = -2; // Ball's vertical velocity
 
-// Paddle properties
+let x = canvas.width / 2;
+let y = canvas.height - 30;
+let dx = 2;
+let dy = -2;
+
 const paddleHeight = 10;
 const paddleWidth = 75;
+
 let paddleX = (canvas.width - paddleWidth) / 2;
-let rightPressed = false; // Flag for right arrow key pressed
-let leftPressed = false; // Flag for left arrow key pressed
+let rightPressed = false;
+let leftPressed = false;
 
-let interval = 0; // Variable to store interval ID
+let interval = 0;
 
-// Brick properties
 const brickRowCount = 3;
 const brickColumnCount = 5;
 const brickWidth = 75;
@@ -28,62 +25,56 @@ const brickOffsetTop = 30;
 const brickOffsetLeft = 30;
 
 let bricks = [];
-// Initialize bricks array
 for (let c = 0; c < brickColumnCount; c++) {
   bricks[c] = [];
   for (let r = 0; r < brickRowCount; r++) {
-    bricks[c][r] = { x: 0, y: 0, status: 1 }; // EaballY brick's position and status (1 = active)
+    bricks[c][r] = { x: 0, y: 0, status: 1 };
   }
 }
 
-// Event listeners for key down and key up events
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 
-// Key down event handler
 function keyDownHandler(e) {
   if (e.key == "Right" || e.key == "ArrowRight") {
-    rightPressed = true; // Set rightPressed to true when right arrow or "D" key is pressed
+    rightPressed = true;
   } else if (e.key == "Left" || e.key == "ArrowLeft") {
-    leftPressed = true; // Set leftPressed to true when left arrow or "A" key is pressed
+    leftPressed = true;
   }
 }
 
-// Key up event handler
 function keyUpHandler(e) {
   if (e.key == "Right" || e.key == "ArrowRight") {
-    rightPressed = false; // Set rightPressed to false when right arrow or "D" key is released
+    rightPressed = false;
   } else if (e.key == "Left" || e.key == "ArrowLeft") {
-    leftPressed = false; // Set leftPressed to false when left arrow or "A" key is released
+    leftPressed = false;
   }
 }
-
-// Collision detection between ball and bricks
 function collisionDetection() {
   for (let c = 0; c < brickColumnCount; c++) {
     for (let r = 0; r < brickRowCount; r++) {
-      let brick = bricks[c][r];
-      if (brick.status == 1) {
-        // ballYeck collision with eaballY active brick
-        if (ballX > brick.x && ballX < brick.x + brickWidth && ballY > brick.y && ballY < brick.y + brickHeight) {
-          ballYV = -ballYV; // Reverse ball's vertical direction
-          brick.status = 0; // Set brick status to 0 (inactive)
+      let b = bricks[c][r];
+      if (b.status == 1) {
+        if (
+          x > b.x &&
+          x < b.x + brickWidth &&
+          y > b.y &&
+          y < b.y + brickHeight
+        ) {
+          dy = -dy;
+          b.status = 0;
         }
       }
     }
   }
 }
-
-// Draw the ball on the canvas
 function drawBall() {
   ctx.beginPath();
-  ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+  ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
   ctx.fillStyle = "#0095DD";
   ctx.fill();
   ctx.closePath();
 }
-
-// Draw the paddle on the canvas
 function drawPaddle() {
   ctx.beginPath();
   ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
@@ -91,8 +82,6 @@ function drawPaddle() {
   ctx.fill();
   ctx.closePath();
 }
-
-// Draw the bricks on the canvas
 function drawBricks() {
   for (let c = 0; c < brickColumnCount; c++) {
     for (let r = 0; r < brickRowCount; r++) {
@@ -111,51 +100,45 @@ function drawBricks() {
   }
 }
 
-// Main draw function to update and render game elements
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-  drawBricks(); // Draw bricks
-  drawBall(); // Draw ball
-  drawPaddle(); // Draw paddle
-  collisionDetection(); // ballYeck for collisions
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawBricks();
+  drawBall();
+  drawPaddle();
+  collisionDetection();
 
-  // Ball collision with walls
-  if (ballX + ballXV > canvas.width - ballRadius || ballX + ballXV < ballRadius) {
-    ballXV = -ballXV; // Reverse ball's horizontal direction
+  if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
+    dx = -dx;
   }
-  // Ball collision with ceiling
-  if (ballY + ballYV < ballRadius) {
-    ballYV = -ballYV; // Reverse ball's vertical direction
-  } else if (ballY + ballYV > canvas.height - ballRadius) {
-    // Ball collision with paddle or game over
-    if (ballX > paddleX && ballX < paddleX + paddleWidth) {
-      ballYV = -ballYV; // Reverse ball's vertical direction
+  if (y + dy < ballRadius) {
+    dy = -dy;
+  } else if (y + dy > canvas.height - ballRadius) {
+    if (x > paddleX && x < paddleX + paddleWidth) {
+      if ((y = y - paddleHeight)) {
+        dy = -dy;
+      }
     } else {
-      alert("GAME OVER"); // Show game over message
-      document.location.reload(); // Reload the page
-      clearInterval(interval); // Clear the interval to stop the game loop
+      alert("GAME OVER");
+      document.location.reload();
+      clearInterval(interval); // Needed for Chrome to end game
     }
   }
 
-  // Move paddle based on key input
   if (rightPressed && paddleX < canvas.width - paddleWidth) {
-    paddleX += 7; // Move paddle to the right
+    paddleX += 7;
   } else if (leftPressed && paddleX > 0) {
-    paddleX -= 7; // Move paddle to the left
+    paddleX -= 7;
   }
 
-  // Update ball's position
-  ballX += ballXV;
-  ballY += ballYV;
+  x += dx;
+  y += dy;
 }
 
-// Function to start the game loop
 function startGame() {
-  interval = setInterval(draw, 100); // Call draw function every 10 milliseconds
+  interval = setInterval(draw, 10);
 }
 
-// Event listener for starting the game
 document.getElementById("runButton").addEventListener("click", function () {
-  startGame(); // Start the game loop when the button is clicked
-  this.disabled = true; // Disable the button to prevent multiple game starts
+  startGame();
+  this.disabled = true;
 });

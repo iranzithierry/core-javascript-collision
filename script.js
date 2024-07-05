@@ -96,6 +96,7 @@ function animate() {
         for (let j = i + 1; j < elements.length; j++) {
             if (elements[i].collidesWith(elements[j])) {
                 elements[i].transform(elements[j]);
+                elements[j].transform(elements[i]);
             }
         }
     }
@@ -105,7 +106,9 @@ function animate() {
     if (remainingTypes.size > 1) {
         requestAnimationFrame(animate); // Continue animation if more than one type remains
     } else {
-        console.log(`Simulation complete. All elements are ${[...remainingTypes][0]}`);
+        setTimeout(() => {
+            console.log(`Simulation complete.${[...remainingTypes][0]} Wins`);
+        }, 500);
     }
 }
 
