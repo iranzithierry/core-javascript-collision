@@ -1,5 +1,6 @@
-import React, { useRef, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { Socket, io } from 'socket.io-client';
+import React, { useRef, useEffect, useState } from 'react';
 
 const CONFIG = {
     elementTypes: ['rock', 'paper', 'scissors'],
@@ -104,7 +105,11 @@ const Simulation = () => {
     const [stats, setStats] = useState('Rock, Paper, Scissors');
     const elementsRef = useRef([]);
     const animationFrameIdRef = useRef(null);
+    // const socket = io("ws://localhost:300");
 
+    // useEffect(() => {
+    //     socket.emit('startSimulation', { elementsRef });
+    // }, [])
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
