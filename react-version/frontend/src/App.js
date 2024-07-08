@@ -105,7 +105,7 @@ const Simulation = () => {
     const [stats, setStats] = useState('Rock, Paper, Scissors');
     const elementsRef = useRef([]);
     const animationFrameIdRef = useRef(null);
-    // const socket = io("ws://localhost:300");
+    // const socket = io("ws://localhost:5000");
 
     // useEffect(() => {
     //     socket.emit('startSimulation', { elementsRef });

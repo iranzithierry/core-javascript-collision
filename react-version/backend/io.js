@@ -1,3 +1,4 @@
+
 const globalSocketIo = (socket, db, io) => {
     socket.on('startSimulation', () => {
         
