@@ -1,5 +1,5 @@
 import { toast } from 'sonner';
-import { Socket, io } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import React, { useRef, useEffect, useState } from 'react';
 
 const CONFIG = {
@@ -8,7 +8,6 @@ const CONFIG = {
     elementRadius: 12,
     minSpeed: 0.5,
     maxSpeed: 0.5,
-    // maxSpeed: 2.0,
     elementColors: {
         rock: '#000',
         paper: '#000FFF',
@@ -103,31 +102,19 @@ class Element {
 const Simulation = () => {
     const canvasRef = useRef(null);
     const [stats, setStats] = useState('Rock, Paper, Scissors');
+    const [countdown, setCountdown] = useState(5);
     const elementsRef = useRef([]);
     const animationFrameIdRef = useRef(null);
-    // const socket = io("ws://localhost:5000");
+    const socket = io("ws://localhost:5000");
 
-    // useEffect(() => {
-    //     socket.emit('startSimulation', { elementsRef });
-    // }, [])
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         canvas.width = canvas.parentElement.offsetWidth;
         canvas.height = window.innerHeight * 0.7;
 
-        const createElements = () => {
-            const elements = [];
-            CONFIG.elementTypes.forEach(type => {
-                for (let i = 0; i < CONFIG.numElements / CONFIG.elementTypes.length; i++) {
-                    const x = Math.random() * canvas.width;
-                    const y = Math.random() * canvas.height;
-                    const dx = (Math.random() * (CONFIG.maxSpeed - CONFIG.minSpeed) + CONFIG.minSpeed) * (Math.random() < 0.5 ? 1 : -1);
-                    const dy = (Math.random() * (CONFIG.maxSpeed - CONFIG.minSpeed) + CONFIG.minSpeed) * (Math.random() < 0.5 ? 1 : -1);
-                    elements.push(new Element(type, x, y, dx, dy));
-                }
-            });
-            elementsRef.current = elements;
+        const createElements = async () => {
+            socket.emit('startSimulation', { width: canvas.width, height: canvas.height });
         };
 
         const animate = () => {
@@ -137,15 +124,6 @@ const Simulation = () => {
                 element.update(canvas);
                 element.draw(ctx);
             });
-
-            for (let i = 0; i < elementsRef.current.length; i++) {
-                for (let j = i + 1; j < elementsRef.current.length; j++) {
-                    if (elementsRef.current[i].collidesWith(elementsRef.current[j])) {
-                        elementsRef.current[i].transform(elementsRef.current[j]);
-                        elementsRef.current[j].transform(elementsRef.current[i]);
-                    }
-                }
-            }
 
             const remainingTypes = new Set(elementsRef.current.map(e => e.type));
             updateStats(remainingTypes);
@@ -164,31 +142,40 @@ const Simulation = () => {
             setStats(`Winning: ${[...remainingTypes][0]}`);
         };
 
-        const resetSimulation = () => {
-            cancelAnimationFrame(animationFrameIdRef.current);
-            createElements();
-            animate();
-        };
-
         createElements();
-        animate();
 
-        const resetButton = document.getElementById('resetButton');
-        resetButton.addEventListener('click', resetSimulation);
+        socket.on('updateSimulation', ({ elements }) => {
+            elementsRef.current = elements.map(element => new Element(element.type, element.x, element.y, element.dx, element.dy));
+            animate();
+        });
+
+        socket.on('simulationStarted', ({ elements }) => {
+            elementsRef.current = elements.map(element => new Element(element.type, element.x, element.y, element.dx, element.dy));
+            animate();
+            setCountdown(5);
+            const interval = setInterval(() => {
+                setCountdown(prev => {
+                    if (prev <= 1) {
+                        clearInterval(interval);
+                        return 5;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        });
 
         return () => {
             cancelAnimationFrame(animationFrameIdRef.current);
-            resetButton.removeEventListener('click', resetSimulation);
         };
     }, []);
 
     return (
-        <div className="mx-auto w-full p-2">
-            <div className="mb-4 flex items-center w-full space-x-2">
-                <button id="resetButton" className="px-4 py-2 bg-gray-900 text-white rounded shadow">Reset</button>
-                <div className="p-2 bg-white shadow rounded">{stats.split(":")[0]}:<b className='capitalize'>{stats.split(":")[1]}</b></div>
+        <div className="w-full p-2 mx-auto">
+            <div className="flex items-center w-full mb-4 space-x-2">
+                <div className="p-2 bg-white rounded shadow">{stats.split(":")[0]}:<b className='capitalize'>{stats.split(":")[1]}</b></div>
+                <div className="p-2 bg-white rounded shadow">Next reset in: {countdown} s</div>
             </div>
-            <canvas ref={canvasRef} className="bg-white w-full h-full"></canvas>
+            <canvas ref={canvasRef} className="w-full h-full bg-white"></canvas>
         </div>
     );
 };
