@@ -64,11 +64,11 @@ class Element {
     getLabel() {
         switch (this.type) {
             case 'rock':
-                return '✊';
+                return '🪨';
             case 'paper':
-                return '🖐';
+                return '📃';
             case 'scissors':
-                return '✌';
+                return '✂️';
         }
     }
 
