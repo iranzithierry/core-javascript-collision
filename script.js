@@ -66,9 +66,9 @@ class Element {
             case 'rock':
                 return '✊';
             case 'paper':
-                return '🖐';
+                return '✋';
             case 'scissors':
-                return '✌';
+                return '✌️';
         }
     }
 
