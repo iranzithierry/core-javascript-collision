@@ -94,8 +94,8 @@ const Simulation = () => {
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
-        canvas.width = canvas.parentElement.offsetWidth;
-        canvas.height = window.innerHeight * 0.9;
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight * 0.8;
 
         // socketRef.current = io("ws://localhost:5000");
         socketRef.current = io("wss://rps-simulator-backend.ebuzzie.com");
