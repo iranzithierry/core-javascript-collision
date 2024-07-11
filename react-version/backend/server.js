@@ -1,3 +1,5 @@
+// kill $(lsof -t -i:5000)
+
 const http = require('http');
 const express = require('express');
 const globalSocketIo = require('./io');
