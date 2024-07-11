@@ -85,7 +85,7 @@ class Element {
 
 const Simulation = () => {
     const canvasRef = useRef(null);
-    const [stats, setStats] = useState('Rock, Paper, Scissors');
+    const [stats, setStats] = useState('Loading Simulation...');
     const elementsRef = useRef([]);
     const animationFrameIdRef = useRef(null);
     const socketRef = useRef(null);
@@ -170,7 +170,10 @@ const Simulation = () => {
         <div className="w-full p-2 mx-auto">
             <div className="flex items-center w-full mb-4 space-x-2">
                 <button id="resetButton" className="px-4 py-2 text-white bg-gray-900 rounded shadow">Reset</button>
-                <div className="p-2 bg-white rounded shadow">{stats.split(":")[0]}:<b className='capitalize'>{stats.split(":")[1]}</b></div>
+                <div className="p-2 bg-white rounded shadow">
+                    {stats.split(":")[0]}:
+                    <b className='capitalize'>{stats.split(":")[1]}</b>
+                </div>
             </div>
             <canvas ref={canvasRef} className="w-full h-full bg-white"></canvas>
         </div>
