@@ -97,7 +97,7 @@ const Simulation = () => {
         canvas.width = canvas.parentElement.offsetWidth;
         canvas.height = window.innerHeight * 0.7;
 
-        socketRef.current = io("ws://localhost:5000");
+        socketRef.current = io("wss://rps-simulator-backend.ebuzzie.com");
 
         const handleSimulationStarted = (data) => {
             if (!simulationStartedRef.current) {
