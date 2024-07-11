@@ -29,32 +29,12 @@ class Element {
         this.dx = dx;
         this.dy = dy;
         this.radius = CONFIG.elementRadius;
+        this.image = new Image();
+        this.image.src = this.getLabel();
     }
 
     draw() {
-        ctx.fillStyle = this.getColor();
-        this.drawRoundedRect(this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2, CONFIG.borderRadius);
-
-        ctx.font = `${this.radius * 1.5}px Arial`;
-        ctx.fillStyle = 'white';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(this.getLabel(), this.x, this.y);
-    }
-
-    drawRoundedRect(x, y, width, height, radius) {
-        ctx.beginPath();
-        ctx.moveTo(x + radius, y);
-        ctx.lineTo(x + width - radius, y);
-        ctx.arcTo(x + width, y, x + width, y + radius, radius);
-        ctx.lineTo(x + width, y + height - radius);
-        ctx.arcTo(x + width, y + height, x + width - radius, y + height, radius);
-        ctx.lineTo(x + radius, y + height);
-        ctx.arcTo(x, y + height, x, y + height - radius, radius);
-        ctx.lineTo(x, y + radius);
-        ctx.arcTo(x, y, x + radius, y, radius);
-        ctx.closePath();
-        ctx.fill();
+        ctx.drawImage(this.image, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
     }
 
     getColor() {
@@ -64,11 +44,13 @@ class Element {
     getLabel() {
         switch (this.type) {
             case 'rock':
-                return '✊';
+                return 'assets/rock.png';
             case 'paper':
-                return '✋';
+                return 'assets/paper.png';
             case 'scissors':
-                return '✌️';
+                return 'assets/scissors.png';
+            default:
+                return '';
         }
     }
 
@@ -94,12 +76,15 @@ class Element {
     transform(other) {
         if (this.type === 'rock' && other.type === 'scissors') {
             other.type = this.type; // Transform scissors to rock
+            other.image.src = this.image.src
         }
         else if (this.type === 'paper' && other.type === 'rock') {
             other.type = this.type; // Transform rock to paper
+            other.image.src = this.image.src
         }
         else if (this.type === 'scissors' && other.type === 'paper') {
             other.type = this.type; // Transform paper to scissors
+            other.image.src = this.image.src
         }
     }
 }
