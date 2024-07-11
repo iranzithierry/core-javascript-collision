@@ -1,5 +1,5 @@
 import { toast } from 'sonner';
-import { io } from 'socket.io-client';
+import { Socket, io } from 'socket.io-client';
 import React, { useRef, useEffect, useState } from 'react';
 
 const CONFIG = {
@@ -29,6 +29,7 @@ class Element {
     }
 
     draw(ctx) {
+        ctx.fillStyle = this.getColor();
         ctx.drawImage(this.image, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
     }
 
@@ -70,16 +71,14 @@ class Element {
 
     transform(other) {
         if (this.type === 'rock' && other.type === 'scissors') {
-            other.type = this.type; // Transform scissors to rock
-            other.image.src = this.image.src
-        }
-        else if (this.type === 'paper' && other.type === 'rock') {
-            other.type = this.type; // Transform rock to paper
-            other.image.src = this.image.src
-        }
-        else if (this.type === 'scissors' && other.type === 'paper') {
-            other.type = this.type; // Transform paper to scissors
-            other.image.src = this.image.src
+            other.type = this.type;
+            other.image.src = this.image.src;
+        } else if (this.type === 'paper' && other.type === 'rock') {
+            other.type = this.type;
+            other.image.src = this.image.src;
+        } else if (this.type === 'scissors' && other.type === 'paper') {
+            other.type = this.type;
+            other.image.src = this.image.src;
         }
     }
 }
@@ -87,10 +86,10 @@ class Element {
 const Simulation = () => {
     const canvasRef = useRef(null);
     const [stats, setStats] = useState('Rock, Paper, Scissors');
-    const [countdown, setCountdown] = useState(5);
     const elementsRef = useRef([]);
     const animationFrameIdRef = useRef(null);
-    const socket = io("ws://localhost:5000");
+    const socketRef = useRef(null);
+    const simulationStartedRef = useRef(false);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -98,9 +97,17 @@ const Simulation = () => {
         canvas.width = canvas.parentElement.offsetWidth;
         canvas.height = window.innerHeight * 0.7;
 
-        const createElements = async () => {
-            socket.emit('startSimulation', { width: canvas.width, height: canvas.height });
+        socketRef.current = io("ws://localhost:5000");
+
+        const handleSimulationStarted = (data) => {
+            if (!simulationStartedRef.current) {
+                elementsRef.current = data.elements.map(element => new Element(element.type, element.x, element.y, element.dx, element.dy));
+                animate();
+                simulationStartedRef.current = true;
+            }
         };
+
+        socketRef.current.on('simulationStarted', handleSimulationStarted);
 
         const animate = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -109,6 +116,15 @@ const Simulation = () => {
                 element.update(canvas);
                 element.draw(ctx);
             });
+
+            for (let i = 0; i < elementsRef.current.length; i++) {
+                for (let j = i + 1; j < elementsRef.current.length; j++) {
+                    if (elementsRef.current[i].collidesWith(elementsRef.current[j])) {
+                        elementsRef.current[i].transform(elementsRef.current[j]);
+                        elementsRef.current[j].transform(elementsRef.current[i]);
+                    }
+                }
+            }
 
             const remainingTypes = new Set(elementsRef.current.map(e => e.type));
             updateStats(remainingTypes);
@@ -123,42 +139,37 @@ const Simulation = () => {
             }
         };
 
-        const updateStats = remainingTypes => {
+        const updateStats = (remainingTypes) => {
             setStats(`Winning: ${[...remainingTypes][0]}`);
         };
 
-        createElements();
+        const resetSimulation = () => {
+            if (animationFrameIdRef.current) {
+                cancelAnimationFrame(animationFrameIdRef.current);
+            }
+            simulationStartedRef.current = false;
+            socketRef.current.emit('startSimulation', { width: canvas.width, height: canvas.height });
+        };
 
-        socket.on('updateSimulation', ({ elements }) => {
-            elementsRef.current = elements.map(element => new Element(element.type, element.x, element.y, element.dx, element.dy));
-            animate();
-        });
+        document.getElementById('resetButton').addEventListener('click', resetSimulation);
 
-        socket.on('simulationStarted', ({ elements }) => {
-            elementsRef.current = elements.map(element => new Element(element.type, element.x, element.y, element.dx, element.dy));
-            animate();
-            setCountdown(5);
-            const interval = setInterval(() => {
-                setCountdown(prev => {
-                    if (prev <= 1) {
-                        clearInterval(interval);
-                        return 5;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
-        });
+        resetSimulation();
 
         return () => {
-            cancelAnimationFrame(animationFrameIdRef.current);
+            if (animationFrameIdRef.current) {
+                cancelAnimationFrame(animationFrameIdRef.current);
+            }
+            socketRef.current.off('simulationStarted', handleSimulationStarted);
+            socketRef.current.disconnect();
+            document.getElementById('resetButton').removeEventListener('click', resetSimulation);
         };
     }, []);
 
     return (
         <div className="w-full p-2 mx-auto">
             <div className="flex items-center w-full mb-4 space-x-2">
+                <button id="resetButton" className="px-4 py-2 text-white bg-gray-900 rounded shadow">Reset</button>
                 <div className="p-2 bg-white rounded shadow">{stats.split(":")[0]}:<b className='capitalize'>{stats.split(":")[1]}</b></div>
-                <div className="p-2 bg-white rounded shadow">Next reset in: {countdown} s</div>
             </div>
             <canvas ref={canvasRef} className="w-full h-full bg-white"></canvas>
         </div>
