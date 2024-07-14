@@ -134,7 +134,7 @@ const Simulation = () => {
                 cancelAnimationFrame(animationFrameIdRef.current);
                 setTimeout(() => {
                     toast.success(`Simulation complete. ${[...remainingTypes][0]} Won !!`);
-                }, 100);
+                }, 500);
             }
         };
 
