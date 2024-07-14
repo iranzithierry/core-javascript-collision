@@ -6,7 +6,7 @@ const CONFIG = {
     numElements: 60,
     elementRadius: 12,
     minSpeed: 0.5,
-    maxSpeed: 0.5,
+    maxSpeed: 0.8,
     // maxSpeed: 2.0,
     elementColors: {
         rock: '#000',
@@ -86,6 +86,23 @@ class Element {
             other.type = this.type; // Transform paper to scissors
             other.image.src = this.image.src
         }
+        this.bumpEachOther(other)
+
+    }
+    bumpEachOther(other) {
+        const angle = Math.atan2(other.y - this.y, other.x - this.x)
+
+        const thisSpeed = this.getSpeed(this)
+        const otherSpeed = this.getSpeed(other)
+
+        this.dx = -Math.cos(angle) * thisSpeed
+        other.dx = Math.cos(angle) * otherSpeed
+
+        this.dy = -Math.sin(angle) * thisSpeed
+        other.dy = Math.sin(angle) * otherSpeed
+    }
+    getSpeed(el) {
+        return Math.sqrt(el.dx * el.dx + el.dy * el.dy)
     }
 }
 let elements = [];
@@ -93,7 +110,7 @@ function createElements() {
     elements = [];
     CONFIG.elementTypes.map(e => {
         for (let i = 0; i < CONFIG.numElements / CONFIG.elementTypes.length; i++) {
-            const x = Math.random() * canvas.width;
+            const x = Math.random() * canvas.width*3;
             const y = Math.random() * canvas.height;
             const dx = (Math.random() * (CONFIG.maxSpeed - CONFIG.minSpeed) + CONFIG.minSpeed) * (Math.random() < 0.5 ? 1 : -1);
             const dy = (Math.random() * (CONFIG.maxSpeed - CONFIG.minSpeed) + CONFIG.minSpeed) * (Math.random() < 0.5 ? 1 : -1);

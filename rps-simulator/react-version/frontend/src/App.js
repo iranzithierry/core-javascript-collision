@@ -13,6 +13,11 @@ const CONFIG = {
         paper: '#000FFF',
         scissors: '#F00'
     },
+    elementImages: {
+        rock: '/assets/rock.png',
+        paper: '/assets/paper.png',
+        scissors: '/assets/scissors.png'
+    },
     borderRadius: 5
 };
 
@@ -37,17 +42,8 @@ class Element {
         return CONFIG.elementColors[this.type];
     }
 
-    getLabel() {
-        switch (this.type) {
-            case 'rock':
-                return '/assets/rock.png';
-            case 'paper':
-                return '/assets/paper.png';
-            case 'scissors':
-                return '/assets/scissors.png';
-            default:
-                return '';
-        }
+    getImageSrc() {
+        return CONFIG.elementImages[this.type];
     }
 
     update(canvas) {
@@ -94,6 +90,7 @@ const Simulation = () => {
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
+        
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight * 0.8;
 
