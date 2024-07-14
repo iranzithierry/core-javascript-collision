@@ -34,12 +34,13 @@ class Element {
     }
 
     draw(ctx) {
-        ctx.fillStyle = this.getColor();
-        ctx.drawImage(this.image, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
-    }
-
-    getColor() {
-        return CONFIG.elementColors[this.type];
+        ctx.drawImage(
+            this.image, 
+            this.x - this.radius, 
+            this.y - this.radius, 
+            this.radius * 2, 
+            this.radius * 2
+        );
     }
 
     getImageSrc() {
