@@ -30,7 +30,7 @@ class Element {
         this.dy = dy;
         this.radius = CONFIG.elementRadius;
         this.image = new Image();
-        this.image.src = this.getLabel();
+        this.image.src = this.getImageSrc();
     }
 
     draw(ctx) {
