@@ -47,7 +47,7 @@ class Element {
         return CONFIG.elementImages[this.type];
     }
 
-    update(canvas) {
+    borderCollides(canvas) {
         this.x += this.dx;
         this.y += this.dy;
 
@@ -112,7 +112,7 @@ const Simulation = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             elementsRef.current.forEach(element => {
-                element.update(canvas);
+                element.borderCollides(canvas);
                 element.draw(ctx);
             });
 
